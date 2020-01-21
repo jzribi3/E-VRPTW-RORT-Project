@@ -1,6 +1,5 @@
 ###include("/home/jonathan/Documents/MPRO/RORT/Projet_RORT/lireInstance.jl") ###
 #GROUPE 2 RORT MPRO 2020
-using JuMP
 filePath=string(@__DIR__,"/data/")
 fileName="E_data.txt"
 function readInstance(filePath,fileName)

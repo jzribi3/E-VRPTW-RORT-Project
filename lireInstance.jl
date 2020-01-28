@@ -49,4 +49,11 @@ function readInstance(filePath,fileName)
     end
     return n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t
 end
-print(readInstance(filePath,fileName))
+#print(readInstance(filePath,fileName))
+#Ci-dessus: script pour demander le nom de fichier de données un utilisateur
+#include("lireInstance.jl")
+#filePath=string(@__DIR__,"/data/")
+#print("Entrer le nom du fichier de données placé dans le dossier data (ex: E_data.txt): ")
+#fileName= readline(stdin)
+#println("Le fichier de données est :",fileName )
+#println(readInstance(filePath,fileName))

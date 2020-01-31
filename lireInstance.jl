@@ -44,6 +44,8 @@ function readInstance(filePath,fileName)
     for i in 1:n
         d[i,i]=0
         t[i,i]=0
+    end
+    for i in 1:nArcs
         d[arcs_array[i][1],arcs_array[i][2]]=arcs_array[i][3]
         t[arcs_array[i][1],arcs_array[i][2]]=arcs_array[i][4]
     end

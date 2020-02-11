@@ -33,8 +33,10 @@ function readInstance(filePath,fileName)
 
         end
     end
-    d=ones(Int8, n, n)*1000
-    t=ones(Int8,n,n)*1000
+    d=[[1000 for k in 1:n] for j in 1:n]
+    #d=ones(Int8, n, n)*1000
+    t=[[1000 for k in 1:n] for j in 1:n]
+    #t=ones(Int8,n,n)*1000
     #for i in 1:n
     #    for j in 1:n
     #        if i~j
@@ -42,14 +44,15 @@ function readInstance(filePath,fileName)
     #        end
     #    end
     for i in 1:n
-        d[i,i]=0
-        t[i,i]=0
+        d[i][i]=0
+        t[i][i]=0
     end
     for i in 1:nArcs
-        d[arcs_array[i][1],arcs_array[i][2]]=arcs_array[i][3]
-        t[arcs_array[i][1],arcs_array[i][2]]=arcs_array[i][4]
+        d[arcs_array[i][1]][arcs_array[i][2]]=arcs_array[i][3]
+        t[arcs_array[i][1]][arcs_array[i][2]]=arcs_array[i][4]
     end
-    return n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t
+    s=[0 for k in 1:n]
+    return n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t,s
 end
 #print(readInstance(filePath,fileName))
 #Ci-dessus: script pour demander le nom de fichier de données un utilisateur

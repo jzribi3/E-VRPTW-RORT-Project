@@ -20,7 +20,7 @@ struct Stop
     i
     arrival_time
     departing_time
-    battery_level            # level of the battery at arrival_time 
+    battery_level            # level of the battery at arrival_time
 end
 
 struct Solution
@@ -205,7 +205,7 @@ function build_greedy_solution(I)
         if found_route
             insert!(best_route, I.V[i], best_position, I)
         else
-            # it can happen for battery level/time window reasons or absence 
+            # it can happen for battery level/time window reasons or absence
             # of routes that there is no route where the customer i could be
             # inserted; in this case we make a new route for him
             new_route = build_route([I.V[i]], I)
@@ -242,21 +242,21 @@ function build_greedy_solution(I)
                 for j = 2 : I.n - 1
                     if I.V[j].is_charging_station || i == j continue end
                     feasible, new_route = arrange_into_feasible_route([I.V[i], I.V[j]], I)
-                    if feasible 
+                    if feasible
                         is_already_assigned[j] = true
-                        break 
+                        break
                     end
                     for k = 2 : I.n - 1
                         if !I.V[k].is_charging_station continue end
                         feasible, new_route = arrange_into_feasible_route([I.V[i], I.V[j], I.V[k]], I)
-                        if feasible 
+                        if feasible
                             is_already_assigned[j] = true
-                            break 
+                            break
                         end
                         feasible, new_route = arrange_into_feasible_route([I.V[i], I.V[j], I.V[k], I.V[k]], I)
-                        if feasible 
+                        if feasible
                             is_already_assigned[j] = true
-                            break 
+                            break
                         end
                     end
                     if feasible break end
@@ -280,34 +280,34 @@ end
 #)
 
 include("lireInstance.jl")
-filePath=string(@__DIR__,"/data/")
-fileName="E_data_3.txt"
-n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t = readInstance(filePath,fileName)
-
-V = []
-for i = 1 : length(sommets_array)
-    append!(V, [Vertex(sommets_array[i][1], sommets_array[i][2], sommets_array[i][3], sommets_array[i][4] == 1, 0)])
-end
-#println("V: ", V)
-println("D: ", d)
-println("T: ", t)
-I = Instance(
-    n,
-    tauxConso,
-    tauxRech,
-    capa,
-    V,
-    d,
-    t
-)
-
-S = build_greedy_solution(I)
-if !is_solution_possible(S, I)
-    println("There is a problem with the solution, it is not feasible")
-end
-println("Number of routes used: ", get_route_nb(S))
-println("Distance traveled: ", get_traveled_distance(S, I))
-println("Routes:")
-for k = 1:length(S.routes)
-    println(S.routes[k])
-end
+# filePath=string(@__DIR__,"/data/")
+# fileName="E_data_3.txt"
+# n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t = readInstance(filePath,fileName)
+#
+# V = []
+# for i = 1 : length(sommets_array)
+#     append!(V, [Vertex(sommets_array[i][1], sommets_array[i][2], sommets_array[i][3], sommets_array[i][4] == 1, 0)])
+# end
+# #println("V: ", V)
+# println("D: ", d)
+# println("T: ", t)
+# I = Instance(
+#     n,
+#     tauxConso,
+#     tauxRech,
+#     capa,
+#     V,
+#     d,
+#     t
+# )
+#
+# S = build_greedy_solution(I)
+# if !is_solution_possible(S, I)
+#     println("There is a problem with the solution, it is not feasible")
+# end
+# println("Number of routes used: ", get_route_nb(S))
+# println("Distance traveled: ", get_traveled_distance(S, I))
+# println("Routes:")
+# for k = 1:length(S.routes)
+#     println(S.routes[k])
+# end

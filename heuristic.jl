@@ -55,14 +55,14 @@ function is_solution_possible(S, I)
 end
 
 function compute_next_stop(stop, u, I)
-    arrival_time = stop.departing_time + I.T[stop.i, u.i]
+    arrival_time = stop.departing_time + I.T[stop.i][u.i]
     # if stop is at charging station then take into account the charging
     if (I.V[stop.i].is_charging_station)
         previous_battery_level = I.battery_capacity
     else
         previous_battery_level = stop.battery_level
     end
-    battery_level = previous_battery_level - I.battery_consumption_rate * I.D[stop.i, u.i]
+    battery_level = previous_battery_level - I.battery_consumption_rate * I.D[stop.i][u.i]
     if u.is_charging_station
         departing_time = arrival_time + I.battery_recharging_rate * (I.battery_capacity - stop.battery_level)
     elseif u.i == I.n
@@ -82,12 +82,18 @@ function get_route_nb(S)
     return length(S.routes)
 end
 
+function get_route_distance(route, I)
+    res = 0
+    for s = 1 : length(route) - 1
+        res += I.D[route[s].i][route[s + 1].i]
+    end
+    return res
+end
+
 function get_traveled_distance(S, I)
     res = 0
     for k = 1 : length(S.routes)
-        for s = 1 : length(S.routes[k]) - 1
-            res += I.D[S.routes[k][s].i, S.routes[k][s + 1].i]
-        end
+        res += get_route_distance(S.routes[k], I)
     end
     return res
 end
@@ -269,6 +275,48 @@ function build_greedy_solution(I)
     return Solution(routes)
 end
 
+function build_instance(fileName)
+    filePath=string(@__DIR__,"/data/")
+    n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t = readInstance(filePath,fileName)
+    
+    V = []
+    for i = 1 : length(sommets_array)
+        append!(V, [Vertex(sommets_array[i][1], sommets_array[i][2], sommets_array[i][3], sommets_array[i][4] == 1, 0)])
+    end
+    #println("V: ", V)
+    println("D: ", d)
+    println("T: ", t)
+    I = Instance(
+        n,
+        tauxConso,
+        tauxRech,
+        capa,
+        V,
+        d,
+        t
+    )
+    return I   
+end
+
+function build_routes_maybe_unfeasible(I, BIG_M)
+    xk=[]
+    dk=[]
+    for i in 2:(I.n-1)
+        if I.V[i].is_charging_station continue end
+        xki=[[0 for j in 1:I.n] for k in 1:I.n]
+        xki[1][i]=1
+        xki[i][I.n]=1
+        push!(xk,xki)
+        new_route = build_route([I.V[i]], I)
+        if is_route_possible(new_route, I)
+            push!(dk,get_route_distance(new_route, I))
+        else
+            push!(dk,BIG_M)
+        end
+    end
+    return dk, xk
+end
+
 #I = Instance(
 #    4,
 #    1,
@@ -280,27 +328,14 @@ end
 #)
 
 include("lireInstance.jl")
-# filePath=string(@__DIR__,"/data/")
-# fileName="E_data_3.txt"
-# n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t = readInstance(filePath,fileName)
-#
-# V = []
-# for i = 1 : length(sommets_array)
-#     append!(V, [Vertex(sommets_array[i][1], sommets_array[i][2], sommets_array[i][3], sommets_array[i][4] == 1, 0)])
-# end
-# #println("V: ", V)
-# println("D: ", d)
-# println("T: ", t)
-# I = Instance(
-#     n,
-#     tauxConso,
-#     tauxRech,
-#     capa,
-#     V,
-#     d,
-#     t
-# )
-#
+# fileName = "E_data.txt"
+# I = build_instance(fileName)
+
+# dk, xk = build_routes_maybe_unfeasible(I, 1000)
+# println(dk)
+# println(xk)
+
+
 # S = build_greedy_solution(I)
 # if !is_solution_possible(S, I)
 #     println("There is a problem with the solution, it is not feasible")
@@ -308,6 +343,7 @@ include("lireInstance.jl")
 # println("Number of routes used: ", get_route_nb(S))
 # println("Distance traveled: ", get_traveled_distance(S, I))
 # println("Routes:")
+
 # for k = 1:length(S.routes)
 #     println(S.routes[k])
 # end

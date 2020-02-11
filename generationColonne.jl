@@ -213,11 +213,14 @@ function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
     return gc , d ,value.(x), objective_value(gc)
 end
 
-n,nArc,r,g,Q,sommets,d,t,s=readInstance(filePath,"grille_test.txt")
+fileName = "E_data.txt"
+n,nArc,r,g,Q,sommets,d,t,s=readInstance(filePath,fileName)
 
 print("n: ",n)
 #dk=[6.0,6.0]
-xk,dk=generation_routes_init(n,sommets,1000)
+I = build_instance(fileName)
+dk, xk = build_routes_maybe_unfeasible(I, 1000)
+#xk,dk=generation_routes_init(n,sommets,1000)
 println("instance : ",n,",",nArc,",",r,",",g,",",Q,",",sommets,",",d,",",t)
 println("xk:", xk)
 #[[[0.,1.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.],[0.,0.,0.,0.]],[[0.,0.,1.,0.],[0.,0.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.]]]

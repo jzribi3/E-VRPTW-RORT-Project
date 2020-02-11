@@ -10,18 +10,34 @@ pm = Model(with_optimizer(GLPK.Optimizer))
 
 
 
-n=4
-nArc=6
-r=1.0
-g=1.0
-Q=7
+# n=4
+# nArc=6
+# r=1.0
+# g=1.0
+# Q=7
 l0 =1000
-sommets=[[1,0,1,0],[2,4,5,0],[3,4,5,0],[4,0,15,0]]
-# indice, fenetre temps debut - fin - type sommet 0=client 1=station de recharge
-s=[0,0,0,0]
+# sommets=[[1,0,1,0],[2,0,1,0],[3,0,1,0],[4,0,1,0]]
+# # indice, fenetre temps debut - fin - type sommet 0=client 1=station de recharge
+ #s=[0,0,0,0]
+#
+# d=[[0,4,2,1000],[1000,0,2,2],[1000,1,0,4],[1000,1000,1000,0]]
+# t=[[0,0,0,1000],[1000,0,0,0],[1000,0,0,0],[1000,1000,1000,0]]
 
-d=[[0,4,2,1000],[1000,0,2,2],[1000,1,0,4],[1000,1000,1000,0]]
-t=[[0,1,5,1000],[1000,0,4,5],[1000,3,0,1],[1000,1000,1000,0]]
+
+function generation_routes_init(n,sommets,plafond)
+    xk=[]
+    dk=[]
+    for i in 2:(n-1)
+        xki=[[0 for j in 1:n] for k in 1:n]
+        if sommets[i][4]==0
+            xki[1][i]=1
+            xki[i][n]=1
+            push!(xk,xki)
+            push!(dk,plafond)
+        end
+    end
+    return xk,dk
+end
 
 
 include("heuristic.jl")
@@ -75,7 +91,7 @@ function build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
         end
     end
 
-    return mu, objective_value(pm)
+    return mu, objective_value(pm), value.(R)
 end
 
 
@@ -84,9 +100,9 @@ function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
 
     gc = Model(with_optimizer(GLPK.Optimizer))
 
-    x = @variable(gc, [1:n,1:n], Bin)
-    tau = @variable(gc,[1:n],Int)
-    y = @variable(gc,[1:n],Int)
+    x = @variable(gc, [1:n,1:n], Bin) #arete selectionnee
+    tau = @variable(gc,[1:n],Int) #heure d'arrivee
+    y = @variable(gc,[1:n],Int) #
     selecSom = @variable(gc,[1:n],Bin)
 
     for i in 1:n
@@ -197,23 +213,29 @@ function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
     return gc , d ,value.(x), objective_value(gc)
 end
 
+n,nArc,r,g,Q,sommets,d,t,s=readInstance(filePath,"grille_test.txt")
 
+print("n: ",n)
+#dk=[6.0,6.0]
+xk,dk=generation_routes_init(n,sommets,1000)
+println("instance : ",n,",",nArc,",",r,",",g,",",Q,",",sommets,",",d,",",t)
+println("xk:", xk)
+#[[[0.,1.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.],[0.,0.,0.,0.]],[[0.,0.,1.,0.],[0.,0.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.]]]
 
-dk=[6.0,6.0]
-xk=[[[0.,1.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.],[0.,0.,0.,0.]],[[0.,0.,1.,0.],[0.,0.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.]]]
-
-mu , opt = build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
+mu , opt, Ropt = build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
 #println("mu",mu)
 optimize!(pm)
 
 
 gc,distroute ,xroute, coutReduit=gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
 
-println("resultat",distroute, "route=",xroute )
+println("resultat",distroute, "route=",xroute, " cout red : ", coutReduit )
 
 compteur=0
 coutRed = -1
+optimal_general=0
 while(compteur<10 && coutRed<0)
+    global optimal_general
     global compteur
     global coutRed
     global distroute
@@ -227,12 +249,19 @@ while(compteur<10 && coutRed<0)
         end
     end
     push!(xk,xroute2)
-    mu, opt = build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
+    mu, opt, Ropt = build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
     gc,distroute ,xroute, coutRed=gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
-    print("cout reduit", coutRed)
-    print("objectif", opt)
+    println("********iter ",compteur,"*********")
+    println("route", xroute)
+    println("cout reduit", coutRed)
+    println("objectif", opt)
+    println("relax ", Ropt)
+    println("routes",xk)
+    println("distances",dk)
+    optimal_general = opt
 end
-
+println(" ")
+println("Obj = ",optimal_general)
 
 #print(termination_status(gc))
 #

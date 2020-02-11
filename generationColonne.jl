@@ -41,6 +41,8 @@ include("heuristic.jl")
 function build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
     K=length(dk)
     R = @variable(pm,[1:K])
+    @constraint(pm,R.<=1)
+    @constraint(pm,R.>=0)
 
     @objective(pm,Min,sum(dk[k]*R[k] for k in 1:K))
 
@@ -53,7 +55,7 @@ function build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
             contraintePM[i]=@constraint(pm, sum(sum(xk[k][i][j]*R[k] for k in 1:K) for j in 1:n)==1)
         end
     end
-    println("model probleme maitre",pm)
+    #println("model probleme maitre",pm)
 
     optimize!(pm)
 
@@ -65,9 +67,9 @@ function build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
     for i in 2:(n-1)
         global contraintePM
         if sommets[i][4]==0
-            print(JuMP.has_duals(pm))
+            #print(JuMP.has_duals(pm))
             mu[i]=dual(contraintePM[i])
-            print(mu[i])
+            #print(mu[i])
         else
             mu[i]=0
         end
@@ -87,7 +89,9 @@ function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
     y = @variable(gc,[1:n],Int)
     selecSom = @variable(gc,[1:n],Bin)
 
-
+    for i in 1:n
+        @constraint(gc,x[i,i]==0)
+    end
 
     for i in 1:n
         @constraint(gc,sum(x[i,j] for j in 1:n)-selecSom[i]==0)
@@ -130,9 +134,9 @@ function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
         if sommets[i][4]==0
             for j in 2:n
                 if i!=j
-                    println("i,j: ", i, ",", j)
-                    println("x=1 ",tau[i]+(t[i][j]+s[i])*1-l0*(1-1)-tau[j])
-                    println("x=0 ", tau[i]+(t[i][j]+s[i])*0-l0*(1-0)-tau[j])
+                    #println("i,j: ", i, ",", j)
+                    #println("x=1 ",tau[i]+(t[i][j]+s[i])*1-l0*(1-1)-tau[j])
+                    #println("x=0 ", tau[i]+(t[i][j]+s[i])*0-l0*(1-0)-tau[j])
                     @constraint(gc,tau[i]+(t[i][j]+s[i])*x[i,j]-l0*(1-x[i,j])-tau[j]<=0)
                 end
             end
@@ -193,17 +197,19 @@ function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
     return gc , d ,value.(x), objective_value(gc)
 end
 
+
+
 dk=[6.0,6.0]
 xk=[[[0.,1.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.],[0.,0.,0.,0.]],[[0.,0.,1.,0.],[0.,0.,0.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.]]]
 
 mu , opt = build_pm(dk,xk,n,nArc,r,g,Q,l0,sommets,d,t)
-println("mu",mu)
+#println("mu",mu)
 optimize!(pm)
 
 
 gc,distroute ,xroute, coutReduit=gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
 
-println("resultat",distroute, xroute )
+println("resultat",distroute, "route=",xroute )
 
 compteur=0
 coutRed = -1

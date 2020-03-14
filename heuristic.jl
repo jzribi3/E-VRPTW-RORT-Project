@@ -1,5 +1,5 @@
 struct Vertex                 # either a customer or a charging station
-    i
+    i::Int32
     window_start
     window_end
     is_charging_station
@@ -17,7 +17,7 @@ struct Instance
 end
 
 struct Stop
-    i
+    i::Int32
     arrival_time
     departing_time
     battery_level            # level of the battery at arrival_time
@@ -71,7 +71,7 @@ function compute_next_stop(stop, u, I)
         departing_time = max(arrival_time, u.window_start) + u.service_time
     end
     return Stop(
-        u.i,
+        convert(Int32, u.i),
         arrival_time,
         departing_time,
         battery_level
@@ -127,7 +127,7 @@ function find_best_insertion!(route, u, I)
         found_position = true
         # update best_position if the cost of this insertion is lower
         # than at previous positions
-        cost = I.D[route[position - 1].i, u.i] + I.D[u.i, route[position].i] - I.D[route[position - 1].i, route[position].i]
+        cost = I.D[route[position - 1].i][u.i] + I.D[u.i][route[position].i] - I.D[route[position - 1].i][route[position].i]
         if (cost < best_cost)
             best_cost = cost
             best_position = position
@@ -225,7 +225,7 @@ function build_greedy_solution(I)
                     if !I.V[j].is_charging_station continue end
                     found_position, position, cost = find_best_insertion!(new_route, I.V[j], I)
                     if (found_position)
-                        insert!(new_route, I.V[j], best_position, I)
+                        insert!(new_route, I.V[j], position, I)
                         break
                     end
                 end
@@ -328,22 +328,24 @@ end
 #)
 
 include("lireInstance.jl")
-# fileName = "E_data.txt"
-# I = build_instance(fileName)
+
+#fileName = "E_data_3.txt"
+fileName = "evrptw_instances/c103C15.txt"
+I = build_instance(fileName)
 
 # dk, xk = build_routes_maybe_unfeasible(I, 1000)
 # println(dk)
 # println(xk)
 
 
-# S = build_greedy_solution(I)
-# if !is_solution_possible(S, I)
-#     println("There is a problem with the solution, it is not feasible")
-# end
-# println("Number of routes used: ", get_route_nb(S))
-# println("Distance traveled: ", get_traveled_distance(S, I))
-# println("Routes:")
+S = build_greedy_solution(I)
+if !is_solution_possible(S, I)
+    println("There is a problem with the solution, it is not feasible")
+end
+println("Number of routes used: ", get_route_nb(S))
+println("Distance traveled: ", get_traveled_distance(S, I))
+println("Routes:")
 
-# for k = 1:length(S.routes)
-#     println(S.routes[k])
-# end
+for k = 1:length(S.routes)
+    println(S.routes[k])
+end

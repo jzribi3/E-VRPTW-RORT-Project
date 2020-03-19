@@ -1,3 +1,8 @@
+using Dates
+
+t0=now()
+
+
 struct Vertex                 # either a customer or a charging station
     i::Int32
     window_start
@@ -278,14 +283,14 @@ end
 function build_instance(fileName)
     filePath=string(@__DIR__,"/data/")
     n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t = readInstance(filePath,fileName)
-    
+    println("n,nArcs,tauxConso,tauxRech,capa,t= ",n,",",nArcs,",",tauxConso,",",tauxRech,",",capa,",",t)
     V = []
     for i = 1 : length(sommets_array)
         append!(V, [Vertex(sommets_array[i][1], sommets_array[i][2], sommets_array[i][3], sommets_array[i][4] == 1, 0)])
     end
     #println("V: ", V)
-    println("D: ", d)
-    println("T: ", t)
+    #println("D: ", d)
+    #println("T: ", t)
     I = Instance(
         n,
         tauxConso,
@@ -295,7 +300,7 @@ function build_instance(fileName)
         d,
         t
     )
-    return I   
+    return I
 end
 
 function build_routes_maybe_unfeasible(I, BIG_M)
@@ -349,3 +354,7 @@ println("Routes:")
 for k = 1:length(S.routes)
     println(S.routes[k])
 end
+
+
+tend=now()
+println("deltat=",tend-t0)

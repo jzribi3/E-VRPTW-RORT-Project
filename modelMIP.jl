@@ -30,7 +30,7 @@ t0=now()
 
 fileName = "E_data.txt"
 #n,nArc,r,g,Q,sommets,d,t,s=readInstance1(filePath,"E_data.txt")
-instance_name="evrptw_instances//r104C10.txt"
+instance_name="evrptw_instances/r104C10.txt"
 n,nArc,r,g,Q,sommets0,d,t,s=readInstance2(filePath,instance_name)
 
 

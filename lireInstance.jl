@@ -1,7 +1,7 @@
 ###include("/home/jonathan/Documents/MPRO/RORT/Projet_RORT/lireInstance.jl") ###
 #GROUPE 2 RORT MPRO 2020
 filePath=string(@__DIR__,"/data/")
-fileName="E_data.txt"
+#fileName="E_data.txt"
 function readInstance1(filePath,fileName)
     n=0
     nArcs=0
@@ -158,5 +158,7 @@ end
 #fileName= readline(stdin)
 #println("Le fichier de données est :",fileName )
 #println(readInstance(filePath,fileName))
-readInstance("data/evrptw_instances/", "rc206_21.txt")
+
+
+#readInstance("data/evrptw_instances/", "rc206_21.txt")
 #readInstance("data/", "E_data_3.txt")

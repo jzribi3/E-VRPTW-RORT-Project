@@ -335,7 +335,7 @@ end
 include("lireInstance.jl")
 
 #fileName = "E_data_3.txt"
-fileName = "evrptw_instances/c103C15.txt"
+fileName ="evrptw_instances/r201C10.txt"
 I = build_instance(fileName)
 
 # dk, xk = build_routes_maybe_unfeasible(I, 1000)
@@ -357,4 +357,6 @@ end
 
 
 tend=now()
+println("Number of routes used: ", get_route_nb(S))
 println("deltat=",tend-t0)
+println("instance: ", fileName)

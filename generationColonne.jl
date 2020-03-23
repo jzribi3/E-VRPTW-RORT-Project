@@ -4,18 +4,19 @@
 # attention : l'indexation commence à 1 !! et ici notre n est égal au n+1 de l'article
 # V_n+1 est entre 2 et n, V_0 désigne tous les sommets sauf le dépot d'arrivee donc de 1 à n-1
 using JuMP
-using GLPK
-
-pm = Model(with_optimizer(GLPK.Optimizer))
-
-
-
+using Dates
+#using GLPK
+using CPLEX
+#pm = Model(with_optimizer(GLPK.Optimizer))
+pm = Model(with_optimizer(CPLEX.Optimizer))
+#set_parameter(pm, "CPX_PARAM_TILIM", 300)
 # n=4
 # nArc=6
 # r=1.0
 # g=1.0
 # Q=7
 l0 =1000
+t0=now()
 # sommets=[[1,0,1,0],[2,0,1,0],[3,0,1,0],[4,0,1,0]]
 # # indice, fenetre temps debut - fin - type sommet 0=client 1=station de recharge
  #s=[0,0,0,0]
@@ -41,7 +42,6 @@ end
 
 
 include("heuristic.jl")
-
 # filePath=string(@__DIR__,"/data/")
 # fileName="E_data_3.txt"
 # n,nArcs,tauxConso,tauxRech,capa,sommets_array,d,t = readInstance(filePath,fileName)
@@ -98,8 +98,9 @@ end
 
 function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
 
-    gc = Model(with_optimizer(GLPK.Optimizer))
-
+    #gc = Model(with_optimizer(GLPK.Optimizer))
+    gc = Model(with_optimizer(CPLEX.Optimizer))
+    #set_parameter(gc, "CPX_PARAM_TILIM", 300)
     x = @variable(gc, [1:n,1:n], Bin) #arete selectionnee
     tau = @variable(gc,[1:n],Int) #heure d'arrivee
     y = @variable(gc,[1:n],Int) #
@@ -213,9 +214,17 @@ function gene_col(mu,n,nArc,r,g,Q,l0,sommets,d,t)
     return gc , d ,value.(x), objective_value(gc)
 end
 
-fileName = "E_data.txt"
-n,nArc,r,g,Q,sommets,d,t,s=readInstance(filePath,fileName)
-
+#fileName = "E_data.txt"
+instance_name = "evrptw_instances/r104C10.txt"
+#104C10
+#n,nArc,r,g,Q,sommets,d,t,s=readInstance(filePath,fileName)
+n,nArc,r,g,Q,sommets0,d,t,s=readInstance2(filePath,instance_name)
+sommets=[[0 for i in 1:4] for j in 1:n]
+for i in 1:n
+    for j in 1:4
+        sommets[i][j]=Int(sommets0[i][j])
+    end
+end
 print("n: ",n)
 #dk=[6.0,6.0]
 I = build_instance(fileName)
@@ -265,7 +274,10 @@ while(compteur<10 && coutRed<0)
 end
 println(" ")
 println("Obj = ",optimal_general)
-
+tend=now()
+println("deltat=",tend-t0)
+println("instance: ", instance_name)
+println("nombre de camions :",sum(value(x[1,i]) for i in 1:n))
 #print(termination_status(gc))
 #
 # println("nombre de camions :",sum(value(x[1,i]) for i in 1:n))

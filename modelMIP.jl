@@ -4,14 +4,15 @@
 # attention : l'indexation commence à 1 !! et ici notre n est égal au n+1 de l'article
 # V_n+1 est entre 2 et n, V_0 désigne tous les sommets sauf le dépot d'arrivee donc de 1 à n-1
 using JuMP
-using GLPK
+#using GLPK
 using Dates
-
+using CPLEX
 
 include("lireInstance.jl")
 
-m = Model(with_optimizer(GLPK.Optimizer))
-
+#m = Model(with_optimizer(GLPK.Optimizer))
+#m = Model(with_optimizer(CPLEX.Optimizer))
+m=Model(with_optimizer(CPLEX.Optimizer))
 # n=4
 # nArc=6
 # r=1.0
@@ -24,12 +25,13 @@ m = Model(with_optimizer(GLPK.Optimizer))
 #
 # d=[[0,4,2,1000],[1000,0,2,2],[1000,1,0,4],[1000,1000,1000,0]]
 # t=[[0,1,5,1000],[1000,0,4,5],[1000,3,0,1],[1000,1000,1000,0]]
-
+l0 =1000
 t0=now()
 
 fileName = "E_data.txt"
 #n,nArc,r,g,Q,sommets,d,t,s=readInstance1(filePath,"E_data.txt")
-n,nArc,r,g,Q,sommets0,d,t,s=readInstance2(filePath,"evrptw_instances/c103C15.txt")
+instance_name="evrptw_instances//r104C10.txt"
+n,nArc,r,g,Q,sommets0,d,t,s=readInstance2(filePath,instance_name)
 
 
 
@@ -137,9 +139,12 @@ optimize!(m)
 print(termination_status(m))
 
 println("nombre de camions :",sum(value(x[1,i]) for i in 1:n))
-println("distance :", objective_value(m))
+
 println("tau :", value.(tau))
 println("x ",value.(x))
 println(value(tau[3]+(t[3][2]+s[3])*value(x[3,2])-l0*(1-value(x[3,2]))-tau[2])<=0)
 tend=now()
+println("distance :", objective_value(m))
 println("deltat=",tend-t0)
+println("instance: ", instance_name)
+println("nombre de camions :",sum(value(x[1,i]) for i in 1:n))
